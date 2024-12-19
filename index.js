@@ -58,6 +58,85 @@ app.post("/add-job", async(req, res)=>{
   }
 })
 
+
+app.get("/all-jobs", async(req, res)=>{
+  try {
+    
+    const result = await jobCollection.find({}).toArray();
+    res.send(result);
+    
+  } catch (error) {
+    console.error("Error to get  job:", error);
+    res.status(500).json({ message: "Error adding job", error: error.message });
+  }
+})
+
+
+// _________________get single job by id
+
+app.get("/update/:id", async(req, res)=>{
+  try {
+    
+    const id = req.params.id;
+    console.log(id)
+    const result = await jobCollection.findOne({ _id: new ObjectId(id) });
+   
+    res.send(result);
+    
+  } catch (error) {
+    console.error("Error to get  job:", error);
+    res.status(500).json({ message: "Error adding job", error: error.message });
+  }
+})
+
+
+app.put("/update/:id", async(req, res)=>{
+  const id = req.params.id;
+  const jobData = req.body;
+
+  const query = {
+    _id: new ObjectId(id),
+  }
+
+  const doc = {
+    $set: jobData
+  }
+
+  try {
+    const result = await jobCollection.updateOne(query, doc);
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Job not found or no changes made" });
+    }
+    res.status(200).json({ message: "Job updated successfully", result });
+  } catch (error) {
+    console.error("Error updating job:", error);
+    res.status(500).json({ message: "Error updating job", error: error.message });
+  }
+})
+
+
+
+// __________get my posted job using email 
+
+app.post("/my-posted-jobs", async(req, res)=>{
+  try {
+    const email = req.body.email;
+    console.log(email);
+    const  query = {
+      jobOwnerEmail: email};
+
+    const result = await jobCollection.find(query).toArray();
+    if(result.length > 0){
+      res.send(result);
+    }else{
+      res.status(404).json({ message: "No jobs found" });
+    }
+  } catch (error) {
+    console.error("Error to get  job:", error);
+    res.status(500).json({ message: "Error adding job", error: error.message });
+  }
+})
+
 // ________________________________my posted job api 
 
 
